@@ -1,0 +1,31 @@
+image --> blocks K * K --> seed pixels (judged by luminance) --> homogenous regions (四连通区域) --> search hulls of each region
+
+detail steps:
+1. seed pixels: 划分K*K大小的block，设计M个权重矩阵，计算得到homogeneity feature vectors, 根据无穷范数，小于给定阈值T_u，且其邻居至少也有一个小于此阈值的block认为是homogenous的，里面的pixels都是seed
+
+2. homogeneous regions的确定：从seed pixels出发，找四连通区域（边界处采用free boundary）；这样就构成多个homogenous区域。得到之后，进一步过滤不合格的homogenous region， pixels个数小于阈值T_b的都discard。
+
+T_b = |S| * K/a;  与block大小K成线性关系，随之增大或减小；  |S| is the size of image.
+
+3. Sign Background Regions的检测：对step2得到的homogenous regions的进一步过滤，只有满足以下两个条件的才成为Sign Background Regions：
+
+	3.1) region中至少包含一个足够大小的文字（holes）；
+	3.2) hole的intensity contrast to bg.
+
+3.1 holes的确定：将region设定为黑白二值图，设定最小外包围矩形，用黑边将其包围起来，构成sub-image。（每个region需要单独做）
+
+在每个sub-image内部，也使用连通策略，查找有多少个连通区域(至少有两个)，若超过两个，则至少有一个hole。
+
+hole的refine操作：noise or dirty都会导致hole，pixels个数小于阈值T_h的hole都discard：
+
+T_h = beta * |C(b)|,   C(b): the size of region.  T_h随C(b)变化，小的region也有更小的text阈值；
+
+3.2 intensity contrast：
+
+hole和背景的luminance contrast要足够大，  |T_B - T_H| >= T_c
+
+paper: A Low Complexity Sign Detection and Text Localization Method for Mobile Applications
+
+
+
+
